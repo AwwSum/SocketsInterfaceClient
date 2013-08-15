@@ -24,10 +24,10 @@ public class Client implements UMassSocketsInterfaceClient{
 	//set directly in constructor
 	static int serverPort;
 	static InetAddress serverInetAddress;
-	static InputStream receivedDataStream; 			//receives data from 'toReceivedData'. Accessible by user.
+	static InputStream receivedDataStream = null; 			//receives data from 'toReceivedData'. Accessible by user.
 	static PipedOutputStream toReceivedDataStream;	//written to by ClientListenerThread, pipes to 'receivedData'.
 	static PipedInputStream sendDataStream; //written to by ClientSenderThread, holds data pending write across the network.
-	static OutputStream toSendDataStream; 	//sends data to sendDataStream. Accessible by user.
+	static OutputStream toSendDataStream = null; 	//sends data to sendDataStream. Accessible by user.
 	
 	//set in connectToServer()
 	static Socket serverSock = null;
@@ -87,7 +87,7 @@ public class Client implements UMassSocketsInterfaceClient{
 	}
 	
 	/*
-	 * Create client listener and sender, and attempt to connect to the client listener at destAddr:destPort.
+	 * Create sender, and attempt to connect to the client listener at destAddr:destPort.
 	 * 	Uses ephemeral port and localhost for the ClientListenerThread.
 	 */
 	public Client(String serverAddr, int serverPort, String destAddr, int destPort){
@@ -109,7 +109,7 @@ public class Client implements UMassSocketsInterfaceClient{
 		//initial setup
 		Client.serverSock = connectToServer();
 		startSenderThread(sendDataStream, destAddr, destPort);
-		startListenerThread(Client.toReceivedDataStream);
+		//startListenerThread(Client.toReceivedDataStream);
 	}
 	
 	
@@ -214,6 +214,11 @@ public class Client implements UMassSocketsInterfaceClient{
 			System.out.println("Client: problem encoding bytes into UTF-8 format.");
 			e.printStackTrace();
 		}
+	}
+	
+	//returns the OutputStream that is hooked up to the InputStream of the ClientSenderThread. Returns null if no ClientSenderThread is running.
+	public OutputStream getOutputStream(){
+		return Client.toSendDataStream;
 	}
 	
 }

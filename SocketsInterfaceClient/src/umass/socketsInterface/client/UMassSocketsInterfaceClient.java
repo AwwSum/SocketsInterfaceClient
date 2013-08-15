@@ -1,6 +1,7 @@
 package umass.socketsInterface.client;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 
 public interface UMassSocketsInterfaceClient {
@@ -12,6 +13,7 @@ public interface UMassSocketsInterfaceClient {
 	/* write functionality */
 	public void write(String payload);
 	public void write(byte[] payload);
+	public OutputStream getOutputStream();
 	
 	
 	/* getters */

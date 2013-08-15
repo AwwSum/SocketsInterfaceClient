@@ -16,7 +16,7 @@ import java.io.OutputStreamWriter;
 
 public class ClientListenerThread extends Thread {
 	
-	private OutputStream outToUserStream; //writes to an InputStream that the user can directly interact with.
+	private OutputStream userStream; //writes to an InputStream that the user can directly interact with.
 	
 	/*
 	 * Create the listener, which will accept incoming connections and respond to them.
@@ -24,14 +24,18 @@ public class ClientListenerThread extends Thread {
 	 * 	to the client that sent the "CONNECT" request.
 	 */
 	public ClientListenerThread(OutputStream outStream){
-		this.outToUserStream = outStream;
+		this.userStream = outStream;
 	}
 	
 	public void run(){
 		
 		try {
+			//server communication
 			BufferedReader inStream = new BufferedReader(new InputStreamReader(Client.serverSock.getInputStream()));
 			BufferedWriter outStream = new BufferedWriter(new OutputStreamWriter(Client.serverSock.getOutputStream()));
+			
+			//user communication
+			BufferedWriter outToUserStream = new BufferedWriter(new OutputStreamWriter(this.userStream));
 			
 			while(true){
 				//receive from client
@@ -55,7 +59,8 @@ public class ClientListenerThread extends Thread {
 					 * 		which pipes to an internal input stream, which is accessible to the user via
 					 * 		a mechanism similar to socket.getInputStream() to allow for reads of data.
 					 */
-					outToUserStream.write(payload.getBytes("UTF-8"));
+					outToUserStream.write(payload);
+					outToUserStream.newLine();
 					outToUserStream.flush();
 					break;
 				default:System.out.println("Client Listener: Received unrecognized command: " + rawString);

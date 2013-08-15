@@ -51,11 +51,15 @@ public class ClientSenderThread extends Thread {
 				if(pendingData.available() > 0){
 					write(convertStreamToString(pendingData));
 				}
+				else{
+					sleep(10);
+				}
 			} catch (IOException e) {
 				System.out.println("Client Sender Thread: I/O error checking number of available bytes.");
 				e.printStackTrace();
+			} catch (InterruptedException e) {
+				//Do nothing. This is expected behavior.
 			}
-			
 		}
 	}
 	
