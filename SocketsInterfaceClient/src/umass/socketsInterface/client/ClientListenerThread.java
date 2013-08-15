@@ -5,10 +5,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.*;
 
 /*
  * This thread will listen for connections from other
@@ -19,36 +15,17 @@ import java.util.*;
 
 public class ClientListenerThread extends Thread {
 	
-	//private Socket serverSock;
-	//private ServerSocket inSocket;
-
 	/*
 	 * Create the listener, which will accept() incoming connections and respond to them.
 	 * 
 	 */
 	public ClientListenerThread(){
-		//this.serverSock = Client.serverSock;
-		//this.serverPort = serverPort;
-		//this.backlog = backlog;
-		/*
-		try {
-			//We no longer need to bind to an address, because the TCP connection to the server is 2-way.
-			//InetAddress bindAddr = InetAddress.getByName("localhost");
-			//this.inSocket = new Socket(serverPort, backlog, bindAddr);
-			//this.inSocket.setReuseAddress(true);
-			
-		} catch (IOException e) {
-			System.out.println("Error creating a client listener thread.");
-			e.printStackTrace();
-		}
-		*/
+		
 	}
 	
 	public void run(){
 		
 		try {
-			//accept a connection and set up the streams
-			//newPeer = inSocket.accept();
 			BufferedReader inStream = new BufferedReader(new InputStreamReader(Client.serverSock.getInputStream()));
 			BufferedWriter outStream = new BufferedWriter(new OutputStreamWriter(Client.serverSock.getOutputStream()));
 			
@@ -56,9 +33,10 @@ public class ClientListenerThread extends Thread {
 				//receive from client
 				String rawString = inStream.readLine();
 				String[] parsedString = rawString.split(" ");
+				String command = parsedString[0];
 				System.out.println("Client Listener: read from client: " + rawString);
 				
-				switch(parsedString[0]){
+				switch(command){
 				case "CONNECT":
 					System.out.println("Client Listener: Received a connect request.");
 					outStream.write("CONNECT_ACCEPT" + " " + parsedString[1] + " " + parsedString[2] + " " + parsedString[3] + " " + parsedString[4]);

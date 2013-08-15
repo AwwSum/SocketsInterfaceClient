@@ -51,6 +51,34 @@ public class ClientSenderThread extends Thread {
 		
 	}
 	
+	private void connectToPeer(){
+		//Socket outSocket;
+		try {
+			
+			//send connection message to server
+			//outSocket = new Socket(InetAddress.getByName(hostAddress), portNum); //Old, direct way.
+			System.out.println("Client sender thread using socket connected to: " + serverSock.getInetAddress());
+			BufferedReader serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
+			BufferedWriter serverOutStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
+			
+			serverOutStream.write("CONNECT" + " " + destHostAddress + " " + destPortNum + " " + srcHostAddress + " " + srcPortNum);
+			serverOutStream.newLine();
+			serverOutStream.flush();
+			
+			String response = serverInStream.readLine();
+			if(response.contains("CONNECT_ACCEPT" + " " + destHostAddress + " " + destPortNum + " " + srcHostAddress + " " + srcPortNum)){
+				System.out.println("Successfully connected to client with IP: " + destHostAddress + " and port: " + destPortNum);
+			}
+			
+		} catch (UnknownHostException e) {
+			System.out.println("Client: unknown host exception connecting to client.");
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("Client: IO exception connecting to server.");
+			e.printStackTrace();
+		}
+	}
+	
 	/*
 	 * Writes data to the client that this clientSenderThread is currently connected to.
 	 * 
@@ -90,34 +118,6 @@ public class ClientSenderThread extends Thread {
 			e.printStackTrace();
 		}
 		
-	}
-	
-	private void connectToPeer(){
-		//Socket outSocket;
-		try {
-			
-			//send connection message to server
-			//outSocket = new Socket(InetAddress.getByName(hostAddress), portNum); //Old, direct way.
-			System.out.println("Client sender thread using socket connected to: " + serverSock.getInetAddress());
-			BufferedReader serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
-			BufferedWriter serverOutStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
-			
-			serverOutStream.write("CONNECT" + " " + destHostAddress + " " + destPortNum + " " + srcHostAddress + " " + srcPortNum);
-			serverOutStream.newLine();
-			serverOutStream.flush();
-			
-			String response = serverInStream.readLine();
-			if(response.contains("CONNECT_ACCEPT" + " " + destHostAddress + " " + destPortNum + " " + srcHostAddress + " " + srcPortNum)){
-				System.out.println("Successfully connected to client with IP: " + destHostAddress + " and port: " + destPortNum);
-			}
-			
-		} catch (UnknownHostException e) {
-			System.out.println("Client: unknown host exception connecting to client.");
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("Client: IO exception connecting to server.");
-			e.printStackTrace();
-		}
 	}
 	
 }//end class
