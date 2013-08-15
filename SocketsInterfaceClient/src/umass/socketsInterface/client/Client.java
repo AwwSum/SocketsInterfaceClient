@@ -3,8 +3,12 @@ package umass.socketsInterface.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -14,13 +18,14 @@ public class Client {
 	/*
 	 * Note that these variables lack modifiers on purpose; this is to
 	 * 	limit direct accesses to them to only those classes contained
-	 * 	within this package
+	 * 	within this package.
 	 */
 	
 	//set directly in constructor
-	static InetAddress serverInetAddress;
 	static int serverPort;
-	static int backlog = 50;
+	static InetAddress serverInetAddress;
+	static InputStream receivedData; 			//receives data from 'toReceivedData'
+	static PipedOutputStream toReceivedData;	//written to by ClientListenerThread, pipes to 'receivedData'.
 	
 	//set in connectToServer()
 	static Socket serverSock = null;
@@ -36,11 +41,16 @@ public class Client {
 		try{
 			Client.serverInetAddress = InetAddress.getByName(serverAddr);
 			Client.serverPort = serverPort;
+			Client.toReceivedData = new PipedOutputStream();
+			Client.receivedData = new PipedInputStream(toReceivedData);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
+		} catch (IOException e) {
+			System.out.println("Unable to set up internal streams.");
+			System.exit(-1);
 		}
-		
+				
 		//initial setup
 		Client.serverSock = connectToServer();
 		startListenerThread();
@@ -51,27 +61,36 @@ public class Client {
 		try{
 			Client.serverInetAddress = InetAddress.getByName(serverAddr);
 			Client.serverPort = serverPort;
+			Client.toReceivedData = new PipedOutputStream();
+			Client.receivedData = new PipedInputStream(toReceivedData);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
+			System.exit(-1);
+		} catch (IOException e) {
+			System.out.println("Unable to set up internal streams.");
 			System.exit(-1);
 		}
 		
 		//initial setup
 		Client.serverSock = connectToServer(clientListenerPort);
-		startListenerThread();
+		startListenerThread(); //uses the local server socket IP and port
 	}
 	
 	/*
 	 * Create client listener and sender, and attempt to connect to the client listener at destAddr:destPort.
 	 * 	Uses ephemeral port and localhost for the ClientListenerThread.
-	 * 
 	 */
 	public Client(String serverAddr, int serverPort, String destAddr, int destPort){
 		try{
 			Client.serverInetAddress = InetAddress.getByName(serverAddr);
 			Client.serverPort = serverPort;
+			Client.toReceivedData = new PipedOutputStream();
+			Client.receivedData = new PipedInputStream(toReceivedData);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
+			System.exit(-1);
+		} catch (IOException e) {
+			System.out.println("Unable to set up internal streams.");
 			System.exit(-1);
 		}
 		
@@ -157,6 +176,11 @@ public class Client {
 	//Returns the local IP address this socket is bound to, or null if the socket is unbound.
 	InetAddress getLocalAddress(){
 		return Client.localInetAddress;
+	}
+	
+	//Returns the client-side input stream. This stream contains only payload.
+	InputStream getInputStream(){
+		return Client.receivedData;
 	}
 	
 }
