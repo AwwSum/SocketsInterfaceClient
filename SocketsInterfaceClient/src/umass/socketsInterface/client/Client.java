@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -23,8 +24,10 @@ public class Client {
 	//set directly in constructor
 	static int serverPort;
 	static InetAddress serverInetAddress;
-	static InputStream receivedDataStream; 			//receives data from 'toReceivedData'
+	static InputStream receivedDataStream; 			//receives data from 'toReceivedData'. Accessible by user.
 	static PipedOutputStream toReceivedDataStream;	//written to by ClientListenerThread, pipes to 'receivedData'.
+	static PipedInputStream sendDataStream; //written to by ClientSenderThread, holds data pending write across the network.
+	static OutputStream toSendDataStream; 	//sends data to sendDataStream. Accessible by user.
 	
 	//set in connectToServer()
 	static Socket serverSock = null;
@@ -93,6 +96,8 @@ public class Client {
 			Client.serverPort = serverPort;
 			Client.toReceivedDataStream = new PipedOutputStream();
 			Client.receivedDataStream = new PipedInputStream(toReceivedDataStream);
+			Client.toSendDataStream = new PipedOutputStream();
+			Client.sendDataStream = new PipedInputStream((PipedOutputStream)toSendDataStream);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -103,7 +108,7 @@ public class Client {
 		
 		//initial setup
 		Client.serverSock = connectToServer();
-		startSenderThread(destAddr, destPort);
+		startSenderThread(sendDataStream, destAddr, destPort);
 		startListenerThread(Client.toReceivedDataStream);
 	}
 	
@@ -148,9 +153,9 @@ public class Client {
 	}
 	
 	//start the sending side of the client.
-	void startSenderThread(String destIPAddress, int destPortNum){
+	void startSenderThread(InputStream pendingData, String destIPAddress, int destPortNum){
 		System.out.println("Opening connection to another client.");
-		Client.clientSender = new ClientSenderThread(destIPAddress, destPortNum);
+		Client.clientSender = new ClientSenderThread(pendingData, destIPAddress, destPortNum);
 		Client.clientSender.start();
 	}
 	
@@ -192,12 +197,23 @@ public class Client {
 	
 	//writes arbitrary bytes to the remote end of the client socket.
 	void write(byte[] payload){
-		
+		try {
+			toSendDataStream.write(payload);
+			toSendDataStream.flush();
+		} catch (IOException e) {
+			System.out.println("Client: IO exception writing data to server.");
+			e.printStackTrace();
+		}
 	}
 	
 	//writes arbitrary Strings to the remote end of the client socket.
 	void write(String payload){
-		
+		try {
+			this.write(payload.getBytes("UTF-8")); //Simply uses the other Write() method of the Client class.
+		} catch (UnsupportedEncodingException e) {
+			System.out.println("Client: problem encoding bytes into UTF-8 format.");
+			e.printStackTrace();
+		}
 	}
 	
 }

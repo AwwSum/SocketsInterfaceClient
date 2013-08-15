@@ -1,6 +1,9 @@
 package umass.socketsInterface.client;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
 
 public class ClientMain {
@@ -16,21 +19,29 @@ public class ClientMain {
 		int serverPortNum = -1;
 		int destPortNum = -1;
 		Client testClient;
-		InputStream rcvData;
 
 		switch(args.length){
+				//reading test
 		case 2: serverIPAddress = args[0];
 				serverPortNum = Integer.parseInt(args[1]);
 				testClient = new Client(serverIPAddress, serverPortNum); //if this is a listening client. So spawn the listening thread.
-				rcvData = testClient.getInputStream();
+				BufferedReader inStreamBuffered = new BufferedReader(new InputStreamReader(testClient.getInputStream()));
+				try {
+					System.out.println("ClientMain Received: " + inStreamBuffered.readLine());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				break;
+				
+				//writing test
 		case 4: serverIPAddress = args[0];
 				serverPortNum = Integer.parseInt(args[1]);
 				destIPAddress = args[2];
 				destPortNum = Integer.parseInt(args[3]);
 				testClient = new Client(serverIPAddress, serverPortNum, destIPAddress, destPortNum); //if this is a client connecting to another
-				testClient.
+				testClient.write("Hello There, World!");
 				break;
+				
 		default:System.out.println("Usage: ./client <server address> <server port> [<destination address> <destination port>]");
 				System.exit(0);
 				break;

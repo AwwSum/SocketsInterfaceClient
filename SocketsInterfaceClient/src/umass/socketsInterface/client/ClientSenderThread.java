@@ -40,10 +40,23 @@ public class ClientSenderThread extends Thread {
 		this.destPortNum = destPortNum;
 		this.srcHostAddress = serverSock.getLocalAddress().getHostAddress();
 		this.srcPortNum = serverSock.getLocalPort();
+		this.pendingData = pendingData;
 	}
 	
 	public void run(){
 		connectToPeer(); //this must always happen; write() will fail if this hasn't been done yet.
+		//wait for input to write to the connected client
+		while(true){
+			try {
+				if(pendingData.available() > 0){
+					write(convertStreamToString(pendingData));
+				}
+			} catch (IOException e) {
+				System.out.println("Client Sender Thread: I/O error checking number of available bytes.");
+				e.printStackTrace();
+			}
+			
+		}
 	}
 	
 	private void connectToPeer(){
@@ -104,13 +117,25 @@ public class ClientSenderThread extends Thread {
 			serverOutStream.newLine();
 			serverOutStream.flush();
 		} catch (UnsupportedEncodingException e) {
-			System.out.println("Problem encoding bytes into UTF-8 format.");
+			System.out.println("Client Sender Thread: Problem encoding bytes into UTF-8 format.");
 			e.printStackTrace();
 		} catch (IOException e) {
-			System.out.println("Client: IO exception writing data to server.");
+			System.out.println("Client Sender Thread: IO exception writing data to server.");
 			e.printStackTrace();
 		}
 		
+	}
+	
+	/*
+	 * Given an InputStream, convert the contents to a string.
+	 * 
+	 * Credit goes to Pavel Repin, Patrick (stack overflow user) and Jacob (stack overflow user)
+	 * 	for this utility function. 
+	 * URL: http://stackoverflow.com/questions/309424/read-convert-an-inputstream-to-a-string
+	 */
+	static String convertStreamToString(java.io.InputStream is) {
+	    java.util.Scanner s = new java.util.Scanner(is, "UTF-8").useDelimiter("\\A");
+	    return s.hasNext() ? s.next() : "";
 	}
 	
 }//end class

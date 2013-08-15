@@ -56,6 +56,7 @@ public class ClientListenerThread extends Thread {
 					 * 		a mechanism similar to socket.getInputStream() to allow for reads of data.
 					 */
 					outToUserStream.write(payload.getBytes("UTF-8"));
+					outToUserStream.flush();
 					break;
 				default:System.out.println("Client Listener: Received unrecognized command: " + rawString);
 						break;
