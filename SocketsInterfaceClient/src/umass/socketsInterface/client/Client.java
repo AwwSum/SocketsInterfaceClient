@@ -14,7 +14,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-public class Client {
+public class Client implements UMassSocketsInterfaceClient{
 
 	/*
 	 * Note that these variables lack modifiers on purpose; this is to
@@ -171,32 +171,32 @@ public class Client {
 	 * Begin interface methods section
 	 */
 	//Returns the port number of the target host this socket is connected to, or 0 if this socket is not yet connected.
-	int getPort(){
+	public int getPort(){
 		return Client.remotePort;
 	}
 	
 	//Returns the local port this socket is bound to, or -1 if the socket is unbound.
-	int getLocalPort(){
+	public int getLocalPort(){
 		return Client.localPort;
 	}
 	
 	//Returns the IP address of the target host this socket is connected to, or null if this socket is not yet connected.
-	InetAddress getInetAddress(){
+	public InetAddress getInetAddress(){
 		return Client.remoteInetAddress;
 	}
 	
 	//Returns the local IP address this socket is bound to, or null if the socket is unbound.
-	InetAddress getLocalAddress(){
+	public InetAddress getLocalAddress(){
 		return Client.localInetAddress;
 	}
 	
 	//Returns the client-side input stream. This stream contains only payload.
-	InputStream getInputStream(){
+	public InputStream getInputStream(){
 		return Client.receivedDataStream;
 	}
 	
 	//writes arbitrary bytes to the remote end of the client socket.
-	void write(byte[] payload){
+	public void write(byte[] payload){
 		try {
 			toSendDataStream.write(payload);
 			toSendDataStream.flush();
@@ -207,7 +207,7 @@ public class Client {
 	}
 	
 	//writes arbitrary Strings to the remote end of the client socket.
-	void write(String payload){
+	public void write(String payload){
 		try {
 			this.write(payload.getBytes("UTF-8")); //Simply uses the other Write() method of the Client class.
 		} catch (UnsupportedEncodingException e) {
