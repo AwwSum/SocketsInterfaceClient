@@ -9,14 +9,16 @@ import java.util.concurrent.locks.ReentrantLock;
  * 
  */
 
-public class ClientProdConsStructures {
+public class ClientProdConsStructures {	
+	//for singleton
+	private ClientProdConsStructures instance = null;
+	
+	//locks
 	private static Lock constructorLock = new ReentrantLock();
-	private boolean hasBeenInstantiated = false;
-	private ClientProdConsStructures instance; //for singleton
 	
 	public ClientProdConsStructures getInstance(){
 		constructorLock.lock();
-		if(hasBeenInstantiated == false){
+		if(instance == null){
 			this.instance = new ClientProdConsStructures();
 		}
 		constructorLock.unlock();

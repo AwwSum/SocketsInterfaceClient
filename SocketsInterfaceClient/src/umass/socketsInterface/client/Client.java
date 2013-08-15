@@ -20,7 +20,6 @@ public class Client {
 	 * 	limit direct accesses to them to only those classes contained
 	 * 	within this package.
 	 */
-	
 	//set directly in constructor
 	static int serverPort;
 	static InetAddress serverInetAddress;
@@ -30,12 +29,20 @@ public class Client {
 	//set in connectToServer()
 	static Socket serverSock = null;
 	
+	//set in startListenerThread() and startSenderThread() respectively.
+	static ClientListenerThread clientListener = null;
+	static ClientSenderThread clientSender = null;
+	
 	//Written to by sender and receiver thread.
 	static int localPort = -1; //is -1 until bound
 	static int remotePort = 0;
 	static InetAddress localInetAddress = null;
 	static InetAddress remoteInetAddress = null;
 	
+	
+	/* 
+	 *	Begin constructors section 
+	 */
 	//create a client listener connected to serverAddr:serverPort. Binds to localhost on an ephemeral port. 
 	public Client(String serverAddr, int serverPort){
 		try{
@@ -100,10 +107,10 @@ public class Client {
 		startListenerThread(Client.toReceivedDataStream);
 	}
 	
+	
 	/*
 	 * Begin functional methods section
 	 */
-	
 	//establishes a connection to the proxy server and returns a copy of the Socket.
 	Socket connectToServer(){
 		try {
@@ -143,21 +150,21 @@ public class Client {
 	//start the sending side of the client.
 	void startSenderThread(String destIPAddress, int destPortNum){
 		System.out.println("Opening connection to another client.");
-		ClientSenderThread clientSender = new ClientSenderThread(destIPAddress, destPortNum);
-		clientSender.start();
+		Client.clientSender = new ClientSenderThread(destIPAddress, destPortNum);
+		Client.clientSender.start();
 	}
 	
 	//start the listening side of the client. Writes received data to the InputStream associated with 'outStream'.
 	void startListenerThread(OutputStream outStream){
 		System.out.println("Opening client listener socket.");
-		ClientListenerThread clientListener = new ClientListenerThread(outStream);
-		clientListener.start();
+		Client.clientListener = new ClientListenerThread(outStream);
+		Client.clientListener.start();
 	}
 
+	
 	/*
 	 * Begin interface methods section
 	 */
-	
 	//Returns the port number of the target host this socket is connected to, or 0 if this socket is not yet connected.
 	int getPort(){
 		return Client.remotePort;
@@ -181,6 +188,16 @@ public class Client {
 	//Returns the client-side input stream. This stream contains only payload.
 	InputStream getInputStream(){
 		return Client.receivedDataStream;
+	}
+	
+	//writes arbitrary bytes to the remote end of the client socket.
+	void write(byte[] payload){
+		
+	}
+	
+	//writes arbitrary Strings to the remote end of the client socket.
+	void write(String payload){
+		
 	}
 	
 }

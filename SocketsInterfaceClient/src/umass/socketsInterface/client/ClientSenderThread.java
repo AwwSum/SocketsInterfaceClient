@@ -3,6 +3,7 @@ package umass.socketsInterface.client;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -18,13 +19,14 @@ public class ClientSenderThread extends Thread {
 	private Socket serverSock;
 	private BufferedReader serverInStream;
 	private BufferedWriter serverOutStream;
+	private InputStream pendingData; //data waiting to be written. Is piped in from Client.
 	
 	private String destHostAddress;
 	private int destPortNum;
 	private String srcHostAddress;
 	private int srcPortNum;
 	
-	public ClientSenderThread(String destHostAddress, int destPortNum){
+	public ClientSenderThread(InputStream pendingData, String destHostAddress, int destPortNum){
 		this.serverSock = Client.serverSock;
 		try {
 			this.serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
@@ -42,24 +44,15 @@ public class ClientSenderThread extends Thread {
 	
 	public void run(){
 		connectToPeer(); //this must always happen; write() will fail if this hasn't been done yet.
-		String helloWorld = new String("Hello, World!");
-		
-		
-		//test byte[] version
-		byte[] helloWorldBytes = helloWorld.getBytes();
-		write(helloWorldBytes);
-		
 	}
 	
 	private void connectToPeer(){
-		//Socket outSocket;
 		try {
-			
 			//send connection message to server
 			//outSocket = new Socket(InetAddress.getByName(hostAddress), portNum); //Old, direct way.
 			System.out.println("Client sender thread using socket connected to: " + serverSock.getInetAddress());
-			BufferedReader serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
-			BufferedWriter serverOutStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
+			serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
+			serverOutStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
 			
 			serverOutStream.write("CONNECT" + " " + destHostAddress + " " + destPortNum + " " + srcHostAddress + " " + srcPortNum);
 			serverOutStream.newLine();
