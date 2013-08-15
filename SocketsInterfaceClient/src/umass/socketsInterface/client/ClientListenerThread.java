@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 
 /*
@@ -15,12 +16,16 @@ import java.io.OutputStreamWriter;
 
 public class ClientListenerThread extends Thread {
 	
+	private OutputStream outToUserStream; //writes to an InputStream that the user can directly interact with.
+	
 	/*
 	 * Create the listener, which will accept incoming connections and respond to them.
 	 * Note that "accept" in this context means "send the CONNECT_ACCEPT response" 
 	 * 	to the client that sent the "CONNECT" request.
 	 */
-	public ClientListenerThread(){}
+	public ClientListenerThread(OutputStream outStream){
+		this.outToUserStream = outStream;
+	}
 	
 	public void run(){
 		
@@ -47,9 +52,10 @@ public class ClientListenerThread extends Thread {
 					String payload = dataSplit[1];
 					System.out.println("Client Listener: Received a DATA message with payload: " + payload);
 					/*	Write the data itself (sans control messages)to internal output stream,
-					 * 		which pipes to an internal input stream, which is accessible via
-					 * 		a mechanism similar to socket.getInputStream to allow for reads of data.
+					 * 		which pipes to an internal input stream, which is accessible to the user via
+					 * 		a mechanism similar to socket.getInputStream() to allow for reads of data.
 					 */
+					outToUserStream.write(payload.getBytes("UTF-8"));
 					break;
 				default:System.out.println("Client Listener: Received unrecognized command: " + rawString);
 						break;

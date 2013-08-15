@@ -24,8 +24,8 @@ public class Client {
 	//set directly in constructor
 	static int serverPort;
 	static InetAddress serverInetAddress;
-	static InputStream receivedData; 			//receives data from 'toReceivedData'
-	static PipedOutputStream toReceivedData;	//written to by ClientListenerThread, pipes to 'receivedData'.
+	static InputStream receivedDataStream; 			//receives data from 'toReceivedData'
+	static PipedOutputStream toReceivedDataStream;	//written to by ClientListenerThread, pipes to 'receivedData'.
 	
 	//set in connectToServer()
 	static Socket serverSock = null;
@@ -41,8 +41,8 @@ public class Client {
 		try{
 			Client.serverInetAddress = InetAddress.getByName(serverAddr);
 			Client.serverPort = serverPort;
-			Client.toReceivedData = new PipedOutputStream();
-			Client.receivedData = new PipedInputStream(toReceivedData);
+			Client.toReceivedDataStream = new PipedOutputStream();
+			Client.receivedDataStream = new PipedInputStream(toReceivedDataStream);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -53,7 +53,7 @@ public class Client {
 				
 		//initial setup
 		Client.serverSock = connectToServer();
-		startListenerThread();
+		startListenerThread(Client.toReceivedDataStream);
 	}
 	
 	//create a client listener connected to serverAddr:serverPort. Binds to localhost on the port specified by listenerPort. 
@@ -61,8 +61,8 @@ public class Client {
 		try{
 			Client.serverInetAddress = InetAddress.getByName(serverAddr);
 			Client.serverPort = serverPort;
-			Client.toReceivedData = new PipedOutputStream();
-			Client.receivedData = new PipedInputStream(toReceivedData);
+			Client.toReceivedDataStream = new PipedOutputStream();
+			Client.receivedDataStream = new PipedInputStream(toReceivedDataStream);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -73,7 +73,7 @@ public class Client {
 		
 		//initial setup
 		Client.serverSock = connectToServer(clientListenerPort);
-		startListenerThread(); //uses the local server socket IP and port
+		startListenerThread(Client.toReceivedDataStream); //uses the local server socket IP and port
 	}
 	
 	/*
@@ -84,8 +84,8 @@ public class Client {
 		try{
 			Client.serverInetAddress = InetAddress.getByName(serverAddr);
 			Client.serverPort = serverPort;
-			Client.toReceivedData = new PipedOutputStream();
-			Client.receivedData = new PipedInputStream(toReceivedData);
+			Client.toReceivedDataStream = new PipedOutputStream();
+			Client.receivedDataStream = new PipedInputStream(toReceivedDataStream);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -97,7 +97,7 @@ public class Client {
 		//initial setup
 		Client.serverSock = connectToServer();
 		startSenderThread(destAddr, destPort);
-		startListenerThread();
+		startListenerThread(Client.toReceivedDataStream);
 	}
 	
 	/*
@@ -143,15 +143,15 @@ public class Client {
 	//start the sending side of the client.
 	void startSenderThread(String destIPAddress, int destPortNum){
 		System.out.println("Opening connection to another client.");
-		ClientSenderThread testClientSender = new ClientSenderThread(destIPAddress, destPortNum);
-		testClientSender.start();
+		ClientSenderThread clientSender = new ClientSenderThread(destIPAddress, destPortNum);
+		clientSender.start();
 	}
 	
-	//start the listening side of the client.
-	void startListenerThread(){
+	//start the listening side of the client. Writes received data to the InputStream associated with 'outStream'.
+	void startListenerThread(OutputStream outStream){
 		System.out.println("Opening client listener socket.");
-		ClientListenerThread testClientListener = new ClientListenerThread();
-		testClientListener.start();
+		ClientListenerThread clientListener = new ClientListenerThread(outStream);
+		clientListener.start();
 	}
 
 	/*
@@ -180,7 +180,7 @@ public class Client {
 	
 	//Returns the client-side input stream. This stream contains only payload.
 	InputStream getInputStream(){
-		return Client.receivedData;
+		return Client.receivedDataStream;
 	}
 	
 }
