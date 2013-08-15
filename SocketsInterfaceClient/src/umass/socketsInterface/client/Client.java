@@ -25,17 +25,17 @@ public class Client {
 	//set in connectToServer()
 	static Socket serverSock = null;
 	
-	//written to by sender and receiver thread
+	//Written to by sender and receiver thread.
 	static int localPort = -1; //is -1 until bound
 	static int remotePort = 0;
 	static InetAddress localInetAddress = null;
 	static InetAddress remoteInetAddress = null;
 	
-	//create client with the default backlog.
-	public Client(String serverAddr, int port){
+	//create a client listener connected to serverAddr:serverPort. Binds to localhost on an ephemeral port. 
+	public Client(String serverAddr, int serverPort){
 		try{
 			Client.serverInetAddress = InetAddress.getByName(serverAddr);
-			Client.serverPort = port;
+			Client.serverPort = serverPort;
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -43,7 +43,41 @@ public class Client {
 		
 		//initial setup
 		Client.serverSock = connectToServer();
-		startSenderThread(serverAddr, port);
+		startListenerThread();
+	}
+	
+	//create a client listener connected to serverAddr:serverPort. Binds to localhost on the port specified by listenerPort. 
+	public Client(String serverAddr, int serverPort, int clientListenerPort){
+		try{
+			Client.serverInetAddress = InetAddress.getByName(serverAddr);
+			Client.serverPort = serverPort;
+		} catch(UnknownHostException e){
+			System.out.println("Invalid IP address passed to client.");
+			System.exit(-1);
+		}
+		
+		//initial setup
+		Client.serverSock = connectToServer(clientListenerPort);
+		startListenerThread();
+	}
+	
+	/*
+	 * Create client listener and sender, and attempt to connect to the client listener at destAddr:destPort.
+	 * 	Uses ephemeral port and localhost for the ClientListenerThread.
+	 * 
+	 */
+	public Client(String serverAddr, int serverPort, String destAddr, int destPort){
+		try{
+			Client.serverInetAddress = InetAddress.getByName(serverAddr);
+			Client.serverPort = serverPort;
+		} catch(UnknownHostException e){
+			System.out.println("Invalid IP address passed to client.");
+			System.exit(-1);
+		}
+		
+		//initial setup
+		Client.serverSock = connectToServer();
+		startSenderThread(destAddr, destPort);
 		startListenerThread();
 	}
 	
@@ -51,11 +85,28 @@ public class Client {
 	 * Begin functional methods section
 	 */
 	
-	
 	//establishes a connection to the proxy server and returns a copy of the Socket.
 	Socket connectToServer(){
 		try {
 			serverSock = new Socket(serverInetAddress, serverPort);
+			System.out.println("Client: socket created");
+			BufferedWriter outStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
+			outStream.flush(); //This is necessary for some reason. Not entirely sure why, but the whole thing doesn't work without it.
+			
+		} catch (UnknownHostException e) {
+			System.out.println("Client: unknown host exception connecting to server.");
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.out.println("Client: IO exception connecting to server.");
+			e.printStackTrace();
+		}
+		return serverSock;
+	}
+	
+	//establishes a connection to the proxy server and returns a copy of the Socket. Binds to the local port specified by clientListenerPort.
+	Socket connectToServer(int clientListenerPort){
+		try {
+			serverSock = new Socket(serverInetAddress, serverPort, InetAddress.getLocalHost(), clientListenerPort);
 			System.out.println("Client: socket created");
 			BufferedWriter outStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
 			outStream.flush(); //This is necessary for some reason. Not entirely sure why, but the whole thing doesn't work without it.
@@ -92,6 +143,7 @@ public class Client {
 	int getPort(){
 		return Client.remotePort;
 	}
+	
 	//Returns the local port this socket is bound to, or -1 if the socket is unbound.
 	int getLocalPort(){
 		return Client.localPort;

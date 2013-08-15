@@ -16,8 +16,6 @@ public class ClientMain {
 		//the following 4 arguments are optional, and are default-initialized.
 		String destIPAddress = null;
 		int destPortNum = -1;
-		//int listenerServerPort = 31337;
-		//int listenerBacklog = 10;
 		
 		if(args.length != 6 && args.length != 4 && args.length != 2){
 			System.out.println("Usage: ./client <server address> <server port> [<destination address> <destination port>]");
@@ -33,15 +31,6 @@ public class ClientMain {
 					destIPAddress = args[2];
 					destPortNum = Integer.parseInt(args[3]);
 					break;
-					/*
-			case 6: serverIPAddress = args[0];
-					serverPortNum = Integer.parseInt(args[1]);
-					destIPAddress = args[2];
-					destPortNum = Integer.parseInt(args[3]);
-					listenerServerPort = Integer.parseInt(args[4]);
-					listenerBacklog = Integer.parseInt(args[5]);
-					break;
-					*/
 			default:System.out.println("Usage: ./client <server address> <server port> [<destination address> <destination port>");
 					break;
 				

@@ -22,7 +22,10 @@ public class ClientListenerThread extends Thread {
 	 * 	to the client that sent the "CONNECT" request.
 	 * 
 	 */
-	public ClientListenerThread(){
+	public ClientListenerThread(){	
+	}
+	
+	public ClientListenerThread(int port){
 		
 	}
 	
