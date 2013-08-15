@@ -40,8 +40,19 @@ public class Client {
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
 		}
+		
+		//initial setup
+		Client.serverSock = connectToServer();
+		startSenderThread(serverAddr, port);
+		startListenerThread();
 	}
 	
+	/*
+	 * Begin functional methods section
+	 */
+	
+	
+	//establishes a connection to the proxy server and returns a copy of the Socket.
 	Socket connectToServer(){
 		try {
 			serverSock = new Socket(serverInetAddress, serverPort);
@@ -73,6 +84,10 @@ public class Client {
 		testClientListener.start();
 	}
 
+	/*
+	 * Begin interface methods section
+	 */
+	
 	//Returns the port number of the target host this socket is connected to, or 0 if this socket is not yet connected.
 	int getPort(){
 		return Client.remotePort;

@@ -19,7 +19,6 @@ public class ClientMain {
 		//int listenerServerPort = 31337;
 		//int listenerBacklog = 10;
 		
-		//TODO: remove the ability to start without args. That is just for debugging.
 		if(args.length != 6 && args.length != 4 && args.length != 2){
 			System.out.println("Usage: ./client <server address> <server port> [<destination address> <destination port>]");
 			System.exit(-1);
