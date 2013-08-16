@@ -17,13 +17,14 @@ import java.io.OutputStreamWriter;
 public class ClientListenerThread extends Thread {
 	
 	private OutputStream userStream; //writes to an InputStream that the user can directly interact with.
+	private Client client;
 	
 	/*
 	 * Create the listener, which will accept incoming connections and respond to them.
 	 * Note that "accept" in this context means "send the CONNECT_ACCEPT response" 
 	 * 	to the client that sent the "CONNECT" request.
 	 */
-	public ClientListenerThread(OutputStream outStream){
+	public ClientListenerThread(OutputStream outStream, Client client){
 		this.userStream = outStream;
 	}
 	
@@ -31,8 +32,8 @@ public class ClientListenerThread extends Thread {
 		
 		try {
 			//server communication
-			BufferedReader inStream = new BufferedReader(new InputStreamReader(Client.serverSock.getInputStream()));
-			BufferedWriter outStream = new BufferedWriter(new OutputStreamWriter(Client.serverSock.getOutputStream()));
+			BufferedReader inStream = new BufferedReader(new InputStreamReader(client.serverSock.getInputStream()));
+			BufferedWriter outStream = new BufferedWriter(new OutputStreamWriter(client.serverSock.getOutputStream()));
 			
 			//user communication
 			BufferedWriter outToUserStream = new BufferedWriter(new OutputStreamWriter(this.userStream));
@@ -44,14 +45,14 @@ public class ClientListenerThread extends Thread {
 				String command = parsedString[0];
 				System.out.println("Client Listener: read from client: " + rawString);
 				
-				switch(command){
-				case "CONNECT":
+				
+				if(command.equals("CONNECT")){
 					System.out.println("Client Listener: Received a connect request.");
 					outStream.write("CONNECT_ACCEPT" + " " + parsedString[1] + " " + parsedString[2] + " " + parsedString[3] + " " + parsedString[4]);
 					outStream.newLine();
 					outStream.flush();
-					break;
-				case "DATA":
+				} 
+				else if(command.equals("DATA")){
 					String[] dataSplit = rawString.split("BEGIN_DATA");
 					String payload = dataSplit[1];
 					System.out.println("Client Listener: Received a DATA message with payload: " + payload);
@@ -62,11 +63,11 @@ public class ClientListenerThread extends Thread {
 					outToUserStream.write(payload);
 					outToUserStream.newLine();
 					outToUserStream.flush();
-					break;
-				default:System.out.println("Client Listener: Received unrecognized command: " + rawString);
-						break;
+				} 
+				else{
+					System.out.println("Client Listener: Received unrecognized command: " + rawString);
 				}
-			}	
+			}
 		} catch (IOException e) {
 			System.out.println("Client Listener: Error accepting a connection from another client.");
 			e.printStackTrace();

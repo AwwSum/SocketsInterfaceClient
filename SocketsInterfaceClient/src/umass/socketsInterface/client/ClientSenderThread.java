@@ -26,8 +26,8 @@ public class ClientSenderThread extends Thread {
 	private String srcHostAddress;
 	private int srcPortNum;
 	
-	public ClientSenderThread(InputStream pendingData, String destHostAddress, int destPortNum){
-		this.serverSock = Client.serverSock;
+	public ClientSenderThread(InputStream pendingData, String destHostAddress, int destPortNum, Client client){
+		this.serverSock = client.serverSock;
 		try {
 			this.serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
 			this.serverOutStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
@@ -38,7 +38,7 @@ public class ClientSenderThread extends Thread {
 		
 		this.destHostAddress = destHostAddress;
 		this.destPortNum = destPortNum;
-		this.srcHostAddress = serverSock.getLocalAddress().getHostAddress();
+		this.srcHostAddress = IPChecker.getIp();
 		this.srcPortNum = serverSock.getLocalPort();
 		this.pendingData = pendingData;
 	}

@@ -38,7 +38,7 @@ public class ClientTester {
 				destIPAddress = args[2];
 				destPortNum = Integer.parseInt(args[3]);
 				testClient = new Client(serverIPAddress, serverPortNum, destIPAddress, destPortNum); //if this is a client connecting to another
-				testClient.write("Hello There, World!");
+				testClient.write("Hello there again, other user!");
 				break;
 				
 		default:System.out.println("Usage: ./client <server address> <server port> [<destination address> <destination port>]");

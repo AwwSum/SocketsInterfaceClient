@@ -20,25 +20,25 @@ public class Client implements UMassSocketsInterfaceClient{
 	 * 	within this package.
 	 */
 	//set directly in constructor
-	static int serverPort;
-	static InetAddress serverInetAddress;
-	static InputStream receivedDataStream = null; 			//receives data from 'toReceivedData'. Accessible by user.
-	static PipedOutputStream toReceivedDataStream;	//written to by ClientListenerThread, pipes to 'receivedData'.
-	static PipedInputStream sendDataStream; //written to by ClientSenderThread, holds data pending write across the network.
-	static OutputStream toSendDataStream = null; 	//sends data to sendDataStream. Accessible by user.
+	int serverPort;
+	InetAddress serverInetAddress;
+	InputStream receivedDataStream = null; 	//receives data from 'toReceivedData'. Accessible by user.
+	PipedOutputStream toReceivedDataStream;	//written to by ClientListenerThread, pipes to 'receivedData'.
+	PipedInputStream sendDataStream; //written to by ClientSenderThread, holds data pending write across the network.
+	OutputStream toSendDataStream = null; 	//sends data to sendDataStream. Accessible by user.
 	
 	//set in connectToServer()
-	static Socket serverSock = null;
+	Socket serverSock = null;
 	
 	//set in startListenerThread() and startSenderThread() respectively.
-	static ClientListenerThread clientListener = null;
-	static ClientSenderThread clientSender = null;
+	ClientListenerThread clientListener = null;
+	ClientSenderThread clientSender = null;
 	
 	//Written to by sender and receiver thread.
-	static int localPort = -1; //is -1 until bound
-	static int remotePort = 0;
-	static InetAddress localInetAddress = null;
-	static InetAddress remoteInetAddress = null;
+	int localPort = -1; //is -1 until bound
+	int remotePort = 0;
+	InetAddress localInetAddress = null;
+	InetAddress remoteInetAddress = null;
 	
 	
 	/* 
@@ -47,10 +47,10 @@ public class Client implements UMassSocketsInterfaceClient{
 	//create a client listener connected to serverAddr:serverPort. Binds to localhost on an ephemeral port. 
 	public Client(String serverAddr, int serverPort){
 		try{
-			Client.serverInetAddress = InetAddress.getByName(serverAddr);
-			Client.serverPort = serverPort;
-			Client.toReceivedDataStream = new PipedOutputStream();
-			Client.receivedDataStream = new PipedInputStream(toReceivedDataStream);
+			this.serverInetAddress = InetAddress.getByName(serverAddr);
+			this.serverPort = serverPort;
+			this.toReceivedDataStream = new PipedOutputStream();
+			this.receivedDataStream = new PipedInputStream(toReceivedDataStream);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -58,19 +58,19 @@ public class Client implements UMassSocketsInterfaceClient{
 			System.out.println("Unable to set up internal streams.");
 			System.exit(-1);
 		}
-				
+		
 		//initial setup
-		Client.serverSock = connectToServer();
-		startListenerThread(Client.toReceivedDataStream);
+		this.serverSock = connectToServer();
+		startListenerThread(this.toReceivedDataStream, this);
 	}
 	
 	//create a client listener connected to serverAddr:serverPort. Binds to localhost on the port specified by listenerPort. 
 	public Client(String serverAddr, int serverPort, int clientListenerPort){
 		try{
-			Client.serverInetAddress = InetAddress.getByName(serverAddr);
-			Client.serverPort = serverPort;
-			Client.toReceivedDataStream = new PipedOutputStream();
-			Client.receivedDataStream = new PipedInputStream(toReceivedDataStream);
+			this.serverInetAddress = InetAddress.getByName(serverAddr);
+			this.serverPort = serverPort;
+			this.toReceivedDataStream = new PipedOutputStream();
+			this.receivedDataStream = new PipedInputStream(toReceivedDataStream);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -80,22 +80,22 @@ public class Client implements UMassSocketsInterfaceClient{
 		}
 		
 		//initial setup
-		Client.serverSock = connectToServer(clientListenerPort);
-		startListenerThread(Client.toReceivedDataStream); //uses the local server socket IP and port
+		this.serverSock = connectToServer(clientListenerPort);
+		startListenerThread(this.toReceivedDataStream, this); //uses the local server socket IP and port
 	}
 	
 	/*
 	 * Create sender, and attempt to connect to the client listener at destAddr:destPort.
-	 * 	Uses ephemeral port and localhost for the ClientListenerThread.
+	 * 	
 	 */
 	public Client(String serverAddr, int serverPort, String destAddr, int destPort){
 		try{
-			Client.serverInetAddress = InetAddress.getByName(serverAddr);
-			Client.serverPort = serverPort;
-			Client.toReceivedDataStream = new PipedOutputStream();
-			Client.receivedDataStream = new PipedInputStream(toReceivedDataStream);
-			Client.toSendDataStream = new PipedOutputStream();
-			Client.sendDataStream = new PipedInputStream((PipedOutputStream)toSendDataStream);
+			this.serverInetAddress = InetAddress.getByName(serverAddr);
+			this.serverPort = serverPort;
+			this.toReceivedDataStream = new PipedOutputStream();
+			this.receivedDataStream = new PipedInputStream(toReceivedDataStream);
+			this.toSendDataStream = new PipedOutputStream();
+			this.sendDataStream = new PipedInputStream((PipedOutputStream)toSendDataStream);
 		} catch(UnknownHostException e){
 			System.out.println("Invalid IP address passed to client.");
 			System.exit(-1);
@@ -105,8 +105,8 @@ public class Client implements UMassSocketsInterfaceClient{
 		}
 		
 		//initial setup
-		Client.serverSock = connectToServer();
-		startSenderThread(sendDataStream, destAddr, destPort);
+		this.serverSock = connectToServer();
+		startSenderThread(sendDataStream, destAddr, destPort, this);
 		//startListenerThread(Client.toReceivedDataStream);
 	}
 	
@@ -151,17 +151,17 @@ public class Client implements UMassSocketsInterfaceClient{
 	}
 	
 	//start the sending side of the client.
-	void startSenderThread(InputStream pendingData, String destIPAddress, int destPortNum){
+	void startSenderThread(InputStream pendingData, String destIPAddress, int destPortNum, Client client){
 		System.out.println("Opening connection to another client.");
-		Client.clientSender = new ClientSenderThread(pendingData, destIPAddress, destPortNum);
-		Client.clientSender.start();
+		this.clientSender = new ClientSenderThread(pendingData, destIPAddress, destPortNum, this);
+		this.clientSender.start();
 	}
 	
 	//start the listening side of the client. Writes received data to the InputStream associated with 'outStream'.
-	void startListenerThread(OutputStream outStream){
+	void startListenerThread(OutputStream outStream, Client referenceToThis){
 		System.out.println("Opening client listener socket.");
-		Client.clientListener = new ClientListenerThread(outStream);
-		Client.clientListener.start();
+		this.clientListener = new ClientListenerThread(outStream, this);
+		this.clientListener.start();
 	}
 
 	
@@ -170,27 +170,27 @@ public class Client implements UMassSocketsInterfaceClient{
 	 */
 	//Returns the port number of the target host this socket is connected to, or 0 if this socket is not yet connected.
 	public int getPort(){
-		return Client.remotePort;
+		return this.remotePort;
 	}
 	
 	//Returns the local port this socket is bound to, or -1 if the socket is unbound.
 	public int getLocalPort(){
-		return Client.localPort;
+		return this.localPort;
 	}
 	
 	//Returns the IP address of the target host this socket is connected to, or null if this socket is not yet connected.
 	public InetAddress getInetAddress(){
-		return Client.remoteInetAddress;
+		return this.remoteInetAddress;
 	}
 	
 	//Returns the local IP address this socket is bound to, or null if the socket is unbound.
 	public InetAddress getLocalAddress(){
-		return Client.localInetAddress;
+		return this.localInetAddress;
 	}
 	
 	//Returns the client-side input stream. This stream contains only payload.
 	public InputStream getInputStream(){
-		return Client.receivedDataStream;
+		return this.receivedDataStream;
 	}
 	
 	//writes arbitrary bytes to the remote end of the client socket.
@@ -216,7 +216,7 @@ public class Client implements UMassSocketsInterfaceClient{
 	
 	//returns the OutputStream that is hooked up to the InputStream of the ClientSenderThread. Returns null if no ClientSenderThread is running.
 	public OutputStream getOutputStream(){
-		return Client.toSendDataStream;
+		return this.toSendDataStream;
 	}
 	
 }
