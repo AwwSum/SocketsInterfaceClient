@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class ClientMain {
+public class ClientTester {
 	/*
 	 * Connects the client to the server, which acts as the middleman between
 	 * 	client daemons.
