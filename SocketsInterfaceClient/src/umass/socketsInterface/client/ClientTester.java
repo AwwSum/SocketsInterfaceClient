@@ -3,6 +3,7 @@ package umass.socketsInterface.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import umass.socketsInterface.client.Client;
 
 public class ClientTester {
 	/*
