@@ -26,6 +26,7 @@ public class ClientListenerThread extends Thread {
 	 */
 	public ClientListenerThread(OutputStream outStream, Client client){
 		this.userStream = outStream;
+		this.client = client;
 	}
 	
 	public void run(){

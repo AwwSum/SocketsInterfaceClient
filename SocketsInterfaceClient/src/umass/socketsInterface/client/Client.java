@@ -110,7 +110,6 @@ public class Client implements UMassSocketsInterfaceClient{
 		//startListenerThread(Client.toReceivedDataStream);
 	}
 	
-	
 	/*
 	 * Begin functional methods section
 	 */
@@ -125,9 +124,11 @@ public class Client implements UMassSocketsInterfaceClient{
 		} catch (UnknownHostException e) {
 			System.out.println("Client: unknown host exception connecting to server.");
 			e.printStackTrace();
+			System.exit(-1);
 		} catch (IOException e) {
 			System.out.println("Client: IO exception connecting to server.");
 			e.printStackTrace();
+			System.exit(-1);
 		}
 		return serverSock;
 	}
@@ -143,9 +144,11 @@ public class Client implements UMassSocketsInterfaceClient{
 		} catch (UnknownHostException e) {
 			System.out.println("Client: unknown host exception connecting to server.");
 			e.printStackTrace();
+			System.exit(-1);
 		} catch (IOException e) {
 			System.out.println("Client: IO exception connecting to server.");
 			e.printStackTrace();
+			System.exit(-1);
 		}
 		return serverSock;
 	}

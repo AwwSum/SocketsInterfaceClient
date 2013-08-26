@@ -34,6 +34,7 @@ public class ClientSenderThread extends Thread {
 		} catch (IOException e) {
 			System.out.println("Problem initializing the readers/writers for the server socket streams.");
 			e.printStackTrace();
+			System.exit(-1);
 		}
 		
 		this.destHostAddress = destHostAddress;
@@ -66,10 +67,11 @@ public class ClientSenderThread extends Thread {
 	private void connectToPeer(){
 		try {
 			//send connection message to server
-			//outSocket = new Socket(InetAddress.getByName(hostAddress), portNum); //Old, direct way.
 			System.out.println("Client sender thread using socket connected to: " + serverSock.getInetAddress());
-			serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream()));
-			serverOutStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
+			
+			//no longer need; done in constructor instead.
+			//serverInStream = new BufferedReader(new InputStreamReader(serverSock.getInputStream())); 
+			//serverOutStream = new BufferedWriter(new OutputStreamWriter(serverSock.getOutputStream()));
 			
 			serverOutStream.write("CONNECT" + " " + destHostAddress + " " + destPortNum + " " + srcHostAddress + " " + srcPortNum);
 			serverOutStream.newLine();
@@ -79,13 +81,19 @@ public class ClientSenderThread extends Thread {
 			if(response.contains("CONNECT_ACCEPT" + " " + destHostAddress + " " + destPortNum + " " + srcHostAddress + " " + srcPortNum)){
 				System.out.println("Successfully connected to client with IP: " + destHostAddress + " and port: " + destPortNum);
 			}
+			else{
+				System.out.println("Unable to connect to client with IP: " + destHostAddress + " and port: " + destPortNum + ". Reason: the host is not connected to the proxy server.");
+				System.exit(-1);
+			}
 			
 		} catch (UnknownHostException e) {
 			System.out.println("Client: unknown host exception connecting to client.");
 			e.printStackTrace();
+			System.exit(-1);
 		} catch (IOException e) {
 			System.out.println("Client: IO exception connecting to server.");
 			e.printStackTrace();
+			System.exit(-1);
 		}
 	}
 	
@@ -107,7 +115,6 @@ public class ClientSenderThread extends Thread {
 			System.out.println("Client: IO exception writing data to server.");
 			e.printStackTrace();
 		}
-		
 	}
 	
 	/*
