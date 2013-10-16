@@ -6,6 +6,7 @@ import java.net.InetAddress;
 
 public interface UMassSocketsInterfaceClient {
 	
+	
 	/* read functionality */
 	public InputStream getInputStream();
 	

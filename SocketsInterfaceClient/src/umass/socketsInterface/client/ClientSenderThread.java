@@ -12,7 +12,6 @@ import java.net.UnknownHostException;
 
 /*
  * Responsible for outgoing traffic client-side.
- * 
  */
 
 public class ClientSenderThread extends Thread {

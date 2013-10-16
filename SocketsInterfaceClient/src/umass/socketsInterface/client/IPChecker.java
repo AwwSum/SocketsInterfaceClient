@@ -12,6 +12,7 @@ import java.net.URL;
  * 	(From this thread http://stackoverflow.com/questions/2939218/getting-the-external-ip-address-in-java)
  * 
  * Slight modifications made by me.
+ * 
  */
 public class IPChecker {
 

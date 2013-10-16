@@ -9,6 +9,7 @@ public class ClientTester {
 	/*
 	 * Connects the client to the server, which acts as the middleman between
 	 * 	client daemons.
+	 * 
 	 */
 	
 	public static void main(String[] args){

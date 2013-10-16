@@ -23,6 +23,7 @@ public class ClientListenerThread extends Thread {
 	 * Create the listener, which will accept incoming connections and respond to them.
 	 * Note that "accept" in this context means "send the CONNECT_ACCEPT response" 
 	 * 	to the client that sent the "CONNECT" request.
+	 * 
 	 */
 	public ClientListenerThread(OutputStream outStream, Client client){
 		this.userStream = outStream;
