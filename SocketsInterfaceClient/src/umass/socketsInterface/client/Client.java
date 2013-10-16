@@ -86,7 +86,6 @@ public class Client implements UMassSocketsInterfaceClient{
 	
 	/*
 	 * Create sender, and attempt to connect to the client listener at destAddr:destPort.
-	 * 	
 	 */
 	public Client(String serverAddr, int serverPort, String destAddr, int destPort){
 		try{
